@@ -23,12 +23,23 @@ def upper_bound(answers):
   else:
       return(max(result)/len(answers))
 
-def agreement(answers):
+#get the maximum agreement
+def maxagreement(answers):
   result = []
   temp = set(answers)
   for i in temp:
     result.append(answers.count(i))
-  return(max(result)/len(answers))
+  return(max(result))
+
+#max of the begining position and the ending position agreement divided by IS length
+def posagreement(answers,text):
+  beginlist = []
+  endlist = []
+  for answer in answers:
+    answer = str(answer)
+    beginlist.append(text.find(answer))
+    endlist.append(text.find(answer)+ len(answer.split()) - 1)
+  return((maxagreement(beginlist)+ maxagreement(beginlist))/(2*len(text.split())))
 
 ### SCRIPT
 #read document
@@ -45,12 +56,12 @@ for x, coder in enumerate(coders):
   full_dict[coder] =  sheet.to_dict('index')
 
 dic_size = len(full_dict['Statements_Arti'])
-fieldnames_in = ['Text Type', 'Institution Type', 'Rule/Norm/Strategy', 'Level of Analysis', 
+fieldnames_in = ['Text Type', 'Institution Type', 'Rule/Norm/Strategy', 'Level of Analysis',
                  'Attribute', 'Deontic', 'aIm', 'oBject', 'Or Else', 'Condition']
-fieldnames_out = ['Text Type', 'Institution Type', 'Rule/Norm/Strategy', 'Level of Analysis', 
-                  'Attribute_lo', 'Attribute_hi', 'Deontic_lo', 'Deontic_hi', 
-                  'aIm_lo', 'aIm_hi', 'oBject_lo', 'oBject_hi', 'Or Else_lo', 'Or Else_hi', 
-                  'Condition_lo', 'Condition_hi']
+fieldnames_out = ['Text Type', 'Institution Type', 'Rule/Norm/Strategy', 'Level of Analysis',
+                  'Attribute_lo', 'Attribute_hi', 'Attribute_position', 'Deontic_lo', 'Deontic_hi', 'Deontic_position',
+                  'aIm_lo', 'aIm_hi', 'aIm_position', 'oBject_lo', 'oBject_hi', 'oBject_position', 'Or Else_lo', 'Or Else_hi',
+                  'Or Else_position','Condition_lo', 'Condition_hi', 'Condition_position']
 ABDICO = ['Attribute', 'Deontic', 'aIm', 'oBject', 'Or Else', 'Condition']
 # build output
 with open('compare.csv',mode ='w') as compare_file:
@@ -64,8 +75,8 @@ with open('compare.csv',mode ='w') as compare_file:
                 answers.append(full_dict[coder][i][item])
             if item in ABDICO:
                 row[item+'_hi']= upper_bound(answers)
-                row[item+'_lo']= agreement(answers)
+                row[item+'_lo']= maxagreement(answers)/len(answers)
+                row[item+'_position'] = posagreement(answers, full_dict[coder][i]['Institutional Statement'])
             else:
-                row[item]= agreement(answers)
+                row[item]= maxagreement(answers)/len(answers)
         compare_writer.writerow(row)
-
