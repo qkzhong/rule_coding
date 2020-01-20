@@ -96,8 +96,9 @@ for coder in coders:
                     continue
                 print(answers)
                 if others_empty:
-                        row[item]= 0
+                        row['agreement']= 0
+                        row['model_improvement'] = 0
                 else:
-                        row['agreement']= others.count(full_dict['statements_r_build_'+coder][i][item])/len(coders)
-                        row['model_improvement']= maxagreement(others)/len(others) - maxagreement(answers)/len(coders)
+                        row['agreement']= others.count(full_dict['statements_r_build_'+coder][i][item])/len(others)
+                        row['model_improvement']= maxagreement(answers)/len(coders) - maxagreement(others)/len(others)
             credibility_writer.writerow(row)
