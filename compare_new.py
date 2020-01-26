@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import csv
+import statistics
 #import coding_helper
 
 
@@ -63,7 +64,10 @@ for x, sheet_name in enumerate(sheet_names, start=1):
 
 dic_size = len(full_dict['statements_r_build_OWEN'])
 fieldnames_in = ['text_type']
-fieldnames_out = ['text_type','text']
+fieldnames_out = ['text_type_IRR','text_type_diversity','text']
+
+IRR = []
+Diversity = []
 
 # build output
 with open('compare_new.csv',mode ='w') as compare_file:
@@ -83,6 +87,14 @@ with open('compare_new.csv',mode ='w') as compare_file:
             if is_empty:
                 continue
             #print(answers)
-            row[item]= maxagreement(answers)/len(answers)
+            row[item + '_IRR']= maxagreement(answers)/len(answers)
+            IRR.append(row[item + '_IRR'])
+            row[item + '_diversity'] = len(set(answers))
+            Diversity.append(row[item + '_diversity'])
+            IRR.append(row[item + '_diversity'])
             row['text']= full_dict['statements_r_build_'+coder][i]['text']
         compare_writer.writerow(row)
+print("Mean of IRR is: ", statistics.mean(IRR))
+print("Median of IRR is: ", statistics.median(IRR))
+print("Mean of Diveristy is: ", statistics.mean(Diversity))
+print("Median of Diveristy is: ", statistics.median(Diversity))
