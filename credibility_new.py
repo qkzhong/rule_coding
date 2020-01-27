@@ -2,6 +2,7 @@
 import pandas as pd
 import numpy as np
 import csv
+import operator
 #import coding_helper
 
 
@@ -27,15 +28,15 @@ def upper_bound(answers):
       return(max(result)/len(answers))
 
 #get the maximum agreement
-def maxagreement(answers):
-  result = []
+def RSOH(answers):
   temp = set(answers)
+  history = {}
   for i in temp:
-    result.append(answers.count(i))
-  if result != []:
-      return(max(result))
-  else:
-      return(0)
+    history[i]= answers.count(i)
+    if history != {}:
+        return(max(history.items(), key=operator.itemgetter(1)))
+    else:
+        return(0,0)
 
 #max of the begining position and the ending position agreement divided by IS length
 def posagreement(answers,text,n):
@@ -68,8 +69,13 @@ for x, sheet_name in enumerate(sheet_names, start=1):
 
 dic_size = len(full_dict['statements_r_build_OWEN'])
 fieldnames_in = ['text_type']
-fieldnames_out = ['agreement','model_improvement','text']
+fieldnames_out = ['agreement','model_improvement','RSOH','text']
 #ABDICO = ['Attribute', 'Deontic', 'aIm', 'oBject', 'Or Else', 'Condition']
+credibility_sum = {'coder':[],
+                   'item':[],
+                   'agreement':[],
+                   'model_improvement':[],
+                   'RSOH':[]}
 # build output
 for coder in coders:
     outputname = 'credibility_' + coder + '.csv'
@@ -98,7 +104,22 @@ for coder in coders:
                 if others_empty:
                         row['agreement']= 0
                         row['model_improvement'] = 0
+                        row['RSOH'] = 'NA'
                 else:
                         row['agreement']= others.count(full_dict['statements_r_build_'+coder][i][item])/len(others)
-                        row['model_improvement']= maxagreement(answers)/len(coders) - maxagreement(others)/len(others)
-            credibility_writer.writerow(row)
+                        row['model_improvement']= RSOH(answers)[1]/len(coders) - RSOH(others)[1]/len(others)
+                        row['RSOH'] = full_dict['statements_r_build_'+coder][i][item] == RSOH(answers)[0]
+            #summary data
+                credibility_sum['coder'].append(coder)
+                credibility_sum['item'].append(item)
+                credibility_sum['agreement'].append( others.count(full_dict['statements_r_build_'+coder][i][item])/len(others))
+                credibility_sum['model_improvement'].append(row['model_improvement'])
+                credibility_sum['RSOH'].append(row['RSOH'])
+            #write independent
+                credibility_writer.writerow(row)
+
+dfcred = pd.DataFrame(credibility_sum)
+summary = dfcred.groupby('coder').aggregate({'agreement': ['mean','median'],
+                             'model_improvement': ['mean','median'],
+                             'RSOH':'sum'})
+export_csv = summary.to_csv (r'credibility_summary.csv', index = None, header=True)
