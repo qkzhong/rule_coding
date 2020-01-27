@@ -122,4 +122,5 @@ dfcred = pd.DataFrame(credibility_sum)
 summary = dfcred.groupby('coder').aggregate({'agreement': ['mean','median'],
                              'model_improvement': ['mean','median'],
                              'RSOH':'sum'})
-export_csv = summary.to_csv (r'credibility_summary.csv', index = None, header=True)
+print(summary)
+export_csv = summary.to_csv (r'credibility_summary.csv', index = True, header=True)
