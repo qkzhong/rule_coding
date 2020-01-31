@@ -50,9 +50,9 @@ def posagreement(answers,text,n):
 
 ### SCRIPT
 #read document
-xls = pd.ExcelFile('rules_data_codifying_build.xlsx')
+xls = pd.ExcelFile('rules_data_codifying_build_week2.xlsx')
 sheet_names = xls.sheet_names
-coders = ['OWEN', 'STEPHEN', 'caitlyn', 'WEISMAN', 'chris','WANG', 'Irizarry', 'DEA']
+coders = ['OWEN', 'STEPHEN', 'caitlyn', 'WEISMAN', 'chris','WANG', 'Irizarry', 'DEA','SAHNI','FERNANDEZ']
 Master = xls.parse(0)
 columns = Master.to_dict('split')['columns']
 Master = Master.to_dict('index')
@@ -67,6 +67,7 @@ for x, sheet_name in enumerate(sheet_names, start=1):
     print(sheet_name)
 
 
+
 dic_size = len(full_dict['statements_r_build_OWEN'])
 fieldnames_in = ['text_type']
 fieldnames_out = ['agreement','model_improvement','RSOH','text']
@@ -74,7 +75,7 @@ fieldnames_out = ['agreement','model_improvement','RSOH','text']
 credibility_sum = {'coder':[],
                    'item':[],
                    'agreement':[],
-                   'model_improvement':[],
+                   #'model_improvement':[],
                    'RSOH':[]}
 # build output
 for coder in coders:
@@ -82,7 +83,7 @@ for coder in coders:
     with open(outputname,mode ='w') as credibility_file:
         credibility_writer = csv.DictWriter(credibility_file, fieldnames = fieldnames_out)
         credibility_writer.writeheader()
-        for i in range(0,dic_size):
+        for i in range(0,199):
             row = {}
             row['text']= full_dict['statements_r_build_'+coder][i]['text']
             for item in fieldnames_in:
@@ -103,17 +104,16 @@ for coder in coders:
                 print(answers)
                 if others_empty:
                         row['agreement']= 0
-                        row['model_improvement'] = 0
+                        #row['model_improvement'] = 0
                         row['RSOH'] = 'NA'
                 else:
                         row['agreement']= others.count(full_dict['statements_r_build_'+coder][i][item])/len(others)
-                        row['model_improvement']= RSOH(answers)[1]/len(coders) - RSOH(others)[1]/len(others)
+                        #row['model_improvement']= RSOH(answers)[1]/len(coders) - RSOH(others)[1]/len(others)
                         row['RSOH'] = full_dict['statements_r_build_'+coder][i][item] == RSOH(answers)[0]
             #summary data
                 credibility_sum['coder'].append(coder)
                 credibility_sum['item'].append(item)
                 credibility_sum['agreement'].append( others.count(full_dict['statements_r_build_'+coder][i][item])/len(others))
-                credibility_sum['model_improvement'].append(row['model_improvement'])
                 credibility_sum['RSOH'].append(row['RSOH'])
             #write independent
                 credibility_writer.writerow(row)
@@ -123,4 +123,4 @@ summary = dfcred.groupby('coder').aggregate({'agreement': ['mean','median'],
                              'model_improvement': ['mean','median'],
                              'RSOH':'sum'})
 print(summary)
-export_csv = summary.to_csv (r'credibility_summary.csv', index = True, header=True)
+export_csv = summary.to_csv (r'credibility_summary_all.csv', index = True, header=True)
